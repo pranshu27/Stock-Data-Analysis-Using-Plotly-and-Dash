@@ -45,6 +45,33 @@ app.layout = html.Div([
                 dcc.Graph(id='stock-vs-sensex')
             ])
         ]),
+        
+        dcc.Tab(label='Average Sensex Hike/Dip', children=[
+            html.Div([
+                html.Label('Select Overall Time Period: '),
+                dcc.RadioItems(id='overall-time-period', options=[
+                    {'label': '6 Months', 'value': '6mo'},
+                    {'label': '1 Year', 'value': '1y'},
+                    {'label': '5 Years', 'value': '5y'},
+                    {'label': '10 Years', 'value': '10y'},
+                    {'label': '20 Years', 'value': '20y'}
+                ], value='1mo'),
+                html.Br(),
+                html.Label('Select Rolling Average Time Period: '),
+                
+                dcc.RadioItems(
+                    id='rolling-mean-time',
+                    options=[
+                        {'label': '30 days', 'value': 30},
+                        {'label': '60 days', 'value': 60},
+                        {'label': '90 days', 'value': 90},
+                    ],
+                    value=30
+                ),
+                html.Br(),
+                dcc.Graph(id='average-sensex-hike')
+            ])
+        ]),
         dcc.Tab(label='Pair Plots', children=[
             html.Div([
                 html.Label('Select stock symbol: '),
@@ -55,6 +82,81 @@ app.layout = html.Div([
         ])
     ])
 ])
+
+# Define the callback for average-sensex-hike graph
+@app.callback(Output('average-sensex-hike', 'figure'),
+              [Input('overall-time-period', 'value'),
+               Input('rolling-mean-time', 'value')])
+
+
+def update_graph(time_period, rolling_mean_time):
+    end_date = dt.date.today()
+    
+    if time_period == '6mo':
+        start_date = end_date - dt.timedelta(days=180)
+    elif time_period == '1y':
+        start_date = end_date - dt.timedelta(days=365)
+    elif time_period == '5y':
+        start_date = end_date - dt.timedelta(days=1825)
+    elif time_period == '10y':
+        start_date = end_date - dt.timedelta(days=3650)
+    elif time_period == '20y':
+        start_date = end_date - dt.timedelta(days=7300)
+    else:
+        start_date = end_date - dt.timedelta(days=365)
+        
+    sensex_data = yf.download("^BSESN", start=start_date, end=end_date)
+    sensex_data['Daily Return'] = sensex_data['Adj Close'].pct_change()
+    rolling_avg = sensex_data['Daily Return'].rolling(window=rolling_mean_time).mean()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=sensex_data.index, y=rolling_avg, mode='lines', name='Rolling Average'))
+    # fig.update_layout(title='Average Sensex Hike', xaxis_title='Date', yaxis_title='Average Daily Return', )
+    
+    fig.update_layout(
+    title='Average Sensex Hike',
+    xaxis_title='Date',
+    yaxis_title='Average Daily Return',
+    hovermode='x unified',
+    xaxis=dict(showspikes=True, spikemode='across', spikedash='dot'),
+    yaxis=dict(showspikes=True, spikemode='across', spikedash='dot')
+    )
+
+    fig.add_shape(
+        dict(
+            type='line',
+            x0=sensex_data.index[0],
+            y0=0,
+            x1=sensex_data.index[-1],
+            y1=0,
+            line=dict(
+                color='black',
+                width=1,
+                dash='dash'
+            )
+        )
+    )
+
+    fig.update_layout(
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=6, label="6m", step="month", stepmode="backward"),
+                    dict(count=1, label="1y", step="year", stepmode="backward"),
+                    dict(count=5, label="5y", step="year", stepmode="backward")
+                    
+                ])
+            ),
+            rangeslider=dict(visible=True),
+            type="date"
+        )
+    )
+
+    
+    return fig
+
+
+
+
 
 # Define the callback for stock vs. sensex graph
 @app.callback(Output('stock-vs-sensex', 'figure'),
@@ -94,17 +196,24 @@ def update_stock_vs_sensex(ticker, attribute, time_period):
             data.append(trace)
             tmp = ','.join(tickers)
 
-    layout = go.Layout(title=f'{attribute} - Comparison of {tmp} over {time_period}', \
-        yaxis=dict(title='Price(₹)'), hovermode='x unified',  # set hovermode to 'x unified'
+    layout = go.Layout(
+    title=f'{attribute} - Comparison of {tmp} over {time_period}',
+    yaxis=dict(title='Price(₹)'),
+    hovermode='x unified',
     xaxis=dict(
-        title='Date',
-        showspikes=True,  # show vertical crosshair line
-        spikedash='dot',
-        spikecolor='black',
-        spikemode='across',
-        spikesnap='cursor',
-        spikethickness=1
-    ))
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1, label="1m", step="month", stepmode="backward"),
+                    dict(count=6, label="6m", step="month", stepmode="backward"),
+                    dict(count=1, label="1y", step="year", stepmode="backward"),
+                    
+                    
+                ])
+            ),
+            rangeslider=dict(visible=True),
+            type="date"
+        )
+    )
     return {'data': data, 'layout': layout}
 
 
