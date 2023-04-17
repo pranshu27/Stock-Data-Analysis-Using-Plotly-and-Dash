@@ -83,7 +83,8 @@ dcc.Tabs([
                     value='30'
                 ),
                 html.Br(),
-                dcc.Graph(id='monte-carlo')
+                dcc.Graph(id='monte-carlo'),
+                dcc.Graph(id='monte-carlo-dist')
             ])
         ]),
 
@@ -396,7 +397,7 @@ def monte_carlo_simulation(start_price, days, mu, sigma, num_simulations):
     return prices
 
 @app.callback(
-    Output('monte-carlo', 'figure'),
+    [Output('monte-carlo', 'figure'), Output('monte-carlo-dist', 'figure')],
     [Input('stk', 'value'),
      Input('sim', 'value'),
      Input('time', 'value')]
@@ -444,21 +445,16 @@ def update_risk_analysis_graph_monte_carlo(stock, simulations, prediction_time):
         fig.add_trace(go.Scatter(x=data.index, y=prices[:, i], mode='lines', name='Simulation ' + str(i+1)))
 
     fig.update_layout(title='Monte Carlo Simulation', xaxis_title='Date', yaxis_title='Stock Price')
-    return fig
+    # return fig  
 
-     # plot the distribution of final results
-    # final_prices = prices[-1, :]
-    # fig_dist = go.Figure()
-    # fig_dist.add_trace(go.Histogram(x=final_prices, nbinsx=20, name='Final Prices'))
-    # fig_dist.add_vline(x=np.percentile(final_prices, 1), line_dash='dash', line_color='red', name='1% Quantile')
-    # fig_dist.update_layout(title='Distribution of Final Prices', xaxis_title='Final Stock Price', yaxis_title='Frequency')
+    #  plot the distribution of final results
+    final_prices = prices[-1, :]
+    fig_dist = go.Figure()
+    fig_dist.add_trace(go.Histogram(x=final_prices, nbinsx=20, name='Final Prices'))
+    fig_dist.add_vline(x=np.percentile(final_prices, 1), line_dash='dash', line_color='red', name='1% Quantile')
+    fig_dist.update_layout(title='Distribution of Final Prices', xaxis_title='Final Stock Price at 1% Quartile', yaxis_title='Frequency',  bargap=0.1)
 
-    # return fig, fig_dist
-
-
-
-
-
+    return fig, fig_dist
 
 # Run the app
 if __name__ == '__main__':
