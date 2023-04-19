@@ -13,25 +13,51 @@ import plotly.express as px
 import datetime as dt
 from scipy.stats import norm        
 from dateutil.relativedelta import relativedelta
+import dash_bootstrap_components as dbc
 
 top50 = ['AAPL', 'MSFT', 'GOOG', 'AMZN', 'FB', 'TSLA', 'JPM', 'JNJ', 'V', 'BRK-A', 'NVDA', 'PG', 'UNH', 'MA', 'HD', 'DIS', 'PYPL', 'BAC', 'INTC', 'VZ', 'CMCSA', 'KO', 'PEP', 'PFE', 'NFLX', 'T', 'ABT', 'CRM', 'CVX', 'MRK', 'WMT', 'CSCO', 'XOM', 'ABBV', 'CVS', 'ACN', 'ADBE', 'ORCL', 'BA', 'TMO', 'TGT', 'F', 'NKE', 'MDT', 'UPS', 'MCD', 'LOW', 'IBM', 'MMM', 'GE', 'AMGN']
 
 
 # Define the app
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, './assets/custom.css'])
+
+
+# Define the navigation bar
+navbar = dbc.NavbarSimple(
+    children=[
+        dbc.NavItem(dbc.NavLink("HOME", href="javascript:location.reload(true)")),
+        dbc.NavItem(dbc.NavLink("ABOUT", href="/about", active = 'exact'))
+    ],
+    brand="STOCK COMPARISON",
+    brand_href="#",
+    color="brown",
+    dark=True,
+)
+
+# Define the list of time periods
+periods = {
+    '6m': '6mo',
+    '1y': '1y',
+    '2y': '2y',
+    '5y': '5y',
+    '10y': '10y',
+    '20y': '20y'
+}
 
 
 # Define the layout
 app.layout = html.Div([
-    html.H1('Stock Comparison'),
-dcc.Tabs([
+    dcc.Location(id='url', refresh=False),
+    navbar,
+    html.Br(),
+    dbc.Tabs([
         dcc.Tab(label='Risk Analysis using LR', children=[
             html.Div([
-                
-                html.Label('Select stock symbol: '),
+                html.Br(),
+                html.Label('Select stock symbol:', style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 dcc.Dropdown(id='st', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
                 html.Br(),
-                html.Label('Select Time Period used for Prediction: '),
+                html.Label('Select Time Period used for Prediction: ', style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 dcc.RadioItems(id='overall', options=[
                     {'label': '6 Months', 'value': '6mo'},
                     {'label': '1 Year', 'value': '1y'},
@@ -40,7 +66,7 @@ dcc.Tabs([
                     {'label': '20 Years', 'value': '20y'}
                 ], value='1y'),
                 html.Br(),
-                html.Label('Select Prediction Time Period: '),
+                html.Label('Select Prediction Time Period: ', style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 
                 dcc.RadioItems(
                     id='prediction-time',
@@ -53,6 +79,33 @@ dcc.Tabs([
                 ),
                 html.Br(),
                 dcc.Graph(id='risk-analysis-graph')
+            ])
+        ]),
+
+
+        dcc.Tab(label = 'Technical Analysis using Candlestick Chart', children=[
+            html.Div([
+                html.Br(),
+                html.Label('Select stock symbol: ', style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
+                dbc.Row([
+                    dbc.Col(
+                        dcc.Dropdown(id='symbol-dropdown', options=[{'label': s, 'value': s} for s in top50], value=top50[0]),
+                    ),
+                    html.Br(),
+                    html.Br(),
+                    html.Br(),
+                    html.Label('Select Time Period for Technical Analysis', style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
+                    dbc.Col(
+                        dcc.Dropdown(id='period-dropdown', options=[{'label': k, 'value': v} for k, v in periods.items()], value='1y'),
+                    ),
+                ]),
+
+                dbc.Row([
+                    dbc.Col(
+                        dcc.Graph(id='graph'),
+                        width={'size': 10, 'offset': 1}
+                    )
+                ]),
             ])
         ]),
 
@@ -118,7 +171,7 @@ dcc.Tabs([
             ])
         ]),
         
-        dcc.Tab(label='Average Sensex Hike/Dip', children=[
+        dcc.Tab(label='Avg. Sensex Hike/Dip', children=[
             html.Div([
                 html.Label('Select Overall Time Period: '),
                 dcc.RadioItems(id='overall-time-period', options=[
@@ -154,6 +207,30 @@ dcc.Tabs([
         ])
     ])
 ])
+
+#Define the callback for candlestick chart
+@app.callback(
+    Output('graph', 'figure'),
+    [Input('symbol-dropdown', 'value'),
+     Input('period-dropdown', 'value')])
+def update_figure(symbol, period):
+    # Load stock data
+    df = yf.Ticker(symbol).history(period=period)
+    
+    # Create the candlestick chart trace
+    trace = go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'])
+    
+    # Create the figure layout
+    layout = go.Layout(
+        xaxis_rangeslider_visible=False,
+        yaxis=dict(title='Price'),
+        xaxis=dict(title='Date'),
+    )
+    
+    # Create the figure object
+    fig = go.Figure(data=[trace], layout=layout)
+    
+    return fig
 
 # Define the callback for average-sensex-hike graph
 @app.callback(Output('average-sensex-hike', 'figure'),
