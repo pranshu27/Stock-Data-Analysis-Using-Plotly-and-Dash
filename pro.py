@@ -256,9 +256,89 @@ app.layout = html.Div([
                 html.Br(),
                 dcc.Graph(id='day-to-day-change')
             ])
+        ]),
+        dcc.Tab(label='Trend Analysis', children=[
+            html.Div([
+
+                html.Label('Select stock symbol: '),
+                dcc.Dropdown(id='stkk3', options=[
+                             {'label': i, 'value': i} for i in top50], value='AAPL'),
+                html.Br(),
+                html.Label('Select Time Period: '),
+                dcc.RadioItems(id='overall3', options=[
+                    {'label': '6 Months', 'value': '6mo'},
+                    {'label': '1 Year', 'value': '1y'},
+                    {'label': '5 Years', 'value': '5y'},
+                    {'label': '10 Years', 'value': '10y'},
+                    {'label': '20 Years', 'value': '20y'}
+                ], value='1y'),
+                html.Br(),
+                dcc.Graph(id='trend-analysis')
+            ])
         ])
     ])
 ])
+
+
+# Trend Analysis
+@app.callback(Output('trend-analysis', 'figure'),
+              [Input('stkk3', 'value')],
+              [Input('overall3', 'value')])
+def update_trend_analysis(stock_name, time_period):
+    end_date = dt.date.today()
+
+    if time_period == '6mo':
+        start_date = end_date - dt.timedelta(days=180)
+    elif time_period == '1y':
+        start_date = end_date - dt.timedelta(days=365)
+    elif time_period == '5y':
+        start_date = end_date - dt.timedelta(days=1825)
+    elif time_period == '10y':
+        start_date = end_date - dt.timedelta(days=3650)
+    elif time_period == '20y':
+        start_date = end_date - dt.timedelta(days=7300)
+    else:
+        start_date = end_date - dt.timedelta(days=365)
+
+    sx_data = yf.download(stock_name, start=start_date, end=end_date)
+
+    # Function defining trend
+    def trend(x):
+        if x > -0.5 and x <= 0.5:
+            return 'Slight or No change'
+        elif x > 0.5 and x <= 1:
+            return 'Slight Positive'
+        elif x > -1 and x <= -0.5:
+            return 'Slight Negative'
+        elif x > 1 and x <= 3:
+            return 'Positive'
+        elif x > -3 and x <= -1:
+            return 'Negative'
+        elif x > 3 and x <= 7:
+            return 'Among top gainers'
+        elif x > -7 and x <= -3:
+            return 'Among top losers'
+        elif x > 7:
+            return 'Bull run'
+        elif x <= -7:
+            return 'Bear drop'
+
+    # Compute the daily percentage change in the stock prices
+    sx_data['Day_Perc_Change'] = sx_data['Close'].pct_change() * 100
+
+    # Add a new column for the trend
+    sx_data['Trend'] = sx_data['Day_Perc_Change'].apply(trend)
+
+    # Group the data by trend and count the number of occurrences
+    sx_pie = sx_data.groupby(
+        'Trend')['Trend'].count().reset_index(name='count')
+
+    # Plot the pie chart using Plotly
+    fig = px.pie(sx_pie, values='count', names='Trend',
+                 title='Trend Analysis',
+                 hole=0.4, color='Trend')
+    return fig
+
 
 # Long short term stocks based on variability
 
