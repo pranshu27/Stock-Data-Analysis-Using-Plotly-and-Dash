@@ -9,12 +9,13 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 import plotly.graph_objs as go
-import plotly.express as px 
+import plotly.express as px
 import datetime as dt
-from scipy.stats import norm        
+from scipy.stats import norm
 from dateutil.relativedelta import relativedelta
 
-top50 = ['AAPL', 'MSFT', 'GOOG', 'AMZN', 'FB', 'TSLA', 'JPM', 'JNJ', 'V', 'BRK-A', 'NVDA', 'PG', 'UNH', 'MA', 'HD', 'DIS', 'PYPL', 'BAC', 'INTC', 'VZ', 'CMCSA', 'KO', 'PEP', 'PFE', 'NFLX', 'T', 'ABT', 'CRM', 'CVX', 'MRK', 'WMT', 'CSCO', 'XOM', 'ABBV', 'CVS', 'ACN', 'ADBE', 'ORCL', 'BA', 'TMO', 'TGT', 'F', 'NKE', 'MDT', 'UPS', 'MCD', 'LOW', 'IBM', 'MMM', 'GE', 'AMGN']
+top50 = ['AAPL', 'MSFT', 'GOOG', 'AMZN', 'FB', 'TSLA', 'JPM', 'JNJ', 'V', 'BRK-A', 'NVDA', 'PG', 'UNH', 'MA', 'HD', 'DIS', 'PYPL', 'BAC', 'INTC', 'VZ', 'CMCSA', 'KO', 'PEP', 'PFE', 'NFLX',
+         'T', 'ABT', 'CRM', 'CVX', 'MRK', 'WMT', 'CSCO', 'XOM', 'ABBV', 'CVS', 'ACN', 'ADBE', 'ORCL', 'BA', 'TMO', 'TGT', 'F', 'NKE', 'MDT', 'UPS', 'MCD', 'LOW', 'IBM', 'MMM', 'GE', 'AMGN']
 
 
 # Define the app
@@ -24,12 +25,13 @@ app = dash.Dash(__name__)
 # Define the layout
 app.layout = html.Div([
     html.H1('Stock Comparison'),
-dcc.Tabs([
+    dcc.Tabs([
         dcc.Tab(label='Risk Analysis using LR', children=[
             html.Div([
-                
+
                 html.Label('Select stock symbol: '),
-                dcc.Dropdown(id='st', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
+                dcc.Dropdown(id='st', options=[
+                             {'label': i, 'value': i} for i in top50], value='AAPL'),
                 html.Br(),
                 html.Label('Select Time Period used for Prediction: '),
                 dcc.RadioItems(id='overall', options=[
@@ -41,7 +43,7 @@ dcc.Tabs([
                 ], value='1y'),
                 html.Br(),
                 html.Label('Select Prediction Time Period: '),
-                
+
                 dcc.RadioItems(
                     id='prediction-time',
                     options=[
@@ -58,9 +60,10 @@ dcc.Tabs([
 
         dcc.Tab(label='Risk Analysis using Monte Carlo Simulation', children=[
             html.Div([
-                
+
                 html.Label('Select stock symbol: '),
-                dcc.Dropdown(id='stk', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
+                dcc.Dropdown(id='stk', options=[
+                             {'label': i, 'value': i} for i in top50], value='AAPL'),
                 html.Br(),
                 html.Label('Select number of simulations to run: '),
                 dcc.RadioItems(id='sim', options=[
@@ -72,7 +75,7 @@ dcc.Tabs([
                 ], value='100'),
                 html.Br(),
                 html.Label('Select Prediction Time Period: '),
-                
+
                 dcc.RadioItems(
                     id='time',
                     options=[
@@ -93,7 +96,8 @@ dcc.Tabs([
         dcc.Tab(label='Stocks\'/Attributes Comparison Playground', children=[
             html.Div([
                 html.Label('Select stock symbol: '),
-                dcc.Dropdown(id='input-box', options=[{'label': i, 'value': i} for i in top50], value='AAPL', multi = True),
+                dcc.Dropdown(
+                    id='input-box', options=[{'label': i, 'value': i} for i in top50], value='AAPL', multi=True),
 
                 html.Br(),
                 html.Label('Select stock attribute: '),
@@ -117,7 +121,7 @@ dcc.Tabs([
                 dcc.Graph(id='stock-vs-sensex')
             ])
         ]),
-        
+
         dcc.Tab(label='Average Sensex Hike/Dip', children=[
             html.Div([
                 html.Label('Select Overall Time Period: '),
@@ -130,7 +134,7 @@ dcc.Tabs([
                 ], value='1mo'),
                 html.Br(),
                 html.Label('Select Rolling Average Time Period: '),
-                
+
                 dcc.RadioItems(
                     id='rolling-mean-time',
                     options=[
@@ -144,10 +148,13 @@ dcc.Tabs([
                 dcc.Graph(id='average-sensex-hike')
             ])
         ]),
+
+
         dcc.Tab(label='Pair Plots', children=[
             html.Div([
                 html.Label('Select stock symbol: '),
-                dcc.Dropdown(id='input-box1', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
+                dcc.Dropdown(
+                    id='input-box1', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
                 html.Br(),
                 dcc.Graph(id='pair-plots')
             ])
@@ -156,14 +163,14 @@ dcc.Tabs([
 ])
 
 # Define the callback for average-sensex-hike graph
+
+
 @app.callback(Output('average-sensex-hike', 'figure'),
               [Input('overall-time-period', 'value'),
                Input('rolling-mean-time', 'value')])
-
-
 def update_graph(time_period, rolling_mean_time):
     end_date = dt.date.today()
-    
+
     if time_period == '6mo':
         start_date = end_date - dt.timedelta(days=180)
     elif time_period == '1y':
@@ -176,21 +183,23 @@ def update_graph(time_period, rolling_mean_time):
         start_date = end_date - dt.timedelta(days=7300)
     else:
         start_date = end_date - dt.timedelta(days=365)
-        
+
     sensex_data = yf.download("^BSESN", start=start_date, end=end_date)
     sensex_data['Daily Return'] = sensex_data['Adj Close'].pct_change()
-    rolling_avg = sensex_data['Daily Return'].rolling(window=rolling_mean_time).mean()
+    rolling_avg = sensex_data['Daily Return'].rolling(
+        window=rolling_mean_time).mean()
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=sensex_data.index, y=rolling_avg, mode='lines', name='Rolling Average'))
+    fig.add_trace(go.Scatter(x=sensex_data.index, y=rolling_avg,
+                  mode='lines', name='Rolling Average'))
     # fig.update_layout(title='Average Sensex Hike', xaxis_title='Date', yaxis_title='Average Daily Return', )
-    
+
     fig.update_layout(
-    title='Average Sensex Hike',
-    xaxis_title='Date',
-    yaxis_title='Average Daily Return',
-    hovermode='x unified',
-    xaxis=dict(showspikes=True, spikemode='across', spikedash='dot'),
-    yaxis=dict(showspikes=True, spikemode='across', spikedash='dot')
+        title='Average Sensex Hike',
+        xaxis_title='Date',
+        yaxis_title='Average Daily Return',
+        hovermode='x unified',
+        xaxis=dict(showspikes=True, spikemode='across', spikedash='dot'),
+        yaxis=dict(showspikes=True, spikemode='across', spikedash='dot')
     )
 
     fig.add_shape(
@@ -215,7 +224,7 @@ def update_graph(time_period, rolling_mean_time):
                     dict(count=6, label="6m", step="month", stepmode="backward"),
                     dict(count=1, label="1y", step="year", stepmode="backward"),
                     dict(count=5, label="5y", step="year", stepmode="backward")
-                    
+
                 ])
             ),
             rangeslider=dict(visible=True),
@@ -223,7 +232,6 @@ def update_graph(time_period, rolling_mean_time):
         )
     )
 
-    
     return fig
 
 
@@ -232,9 +240,8 @@ def update_graph(time_period, rolling_mean_time):
               [Input('input-box', 'value'),
                Input('stock-attribute', 'value'),
                Input('time-period', 'value')])
-
 def update_stock_vs_sensex(ticker, attribute, time_period):
-    tickers  = ticker
+    tickers = ticker
     # Get data for selected stock and Sensex
     end_date = dt.date.today()
     if time_period == '1mo':
@@ -249,34 +256,36 @@ def update_stock_vs_sensex(ticker, attribute, time_period):
         start_date = end_date - dt.timedelta(days=1825)
     else:
         start_date = end_date - dt.timedelta(days=365)
-    
+
     data = []
     tmp = None
     if type(tickers) == str:
         stock_data = yf.download(tickers, start=start_date, end=end_date)
-        trace = go.Scatter(x=stock_data.index, y=stock_data[attribute], name=tickers)
+        trace = go.Scatter(x=stock_data.index,
+                           y=stock_data[attribute], name=tickers)
         tmp = tickers
         data.append(trace)
     else:
         for ticker in tickers:
             # print(ticker, type(ticker))
             stock_data = yf.download(ticker, start=start_date, end=end_date)
-            trace = go.Scatter(x=stock_data.index, y=stock_data[attribute], name=ticker)
+            trace = go.Scatter(x=stock_data.index,
+                               y=stock_data[attribute], name=ticker)
             data.append(trace)
             tmp = ','.join(tickers)
 
     layout = go.Layout(
-    title=f'{attribute} - Comparison of {tmp} over {time_period}',
-    yaxis=dict(title='Price(₹)'),
-    hovermode='x unified',
-    xaxis=dict(
+        title=f'{attribute} - Comparison of {tmp} over {time_period}',
+        yaxis=dict(title='Price(₹)'),
+        hovermode='x unified',
+        xaxis=dict(
             rangeselector=dict(
                 buttons=list([
                     dict(count=1, label="1m", step="month", stepmode="backward"),
                     dict(count=6, label="6m", step="month", stepmode="backward"),
                     dict(count=1, label="1y", step="year", stepmode="backward"),
-                    
-                    
+
+
                 ])
             ),
             rangeslider=dict(visible=True),
@@ -291,11 +300,13 @@ def update_stock_vs_sensex(ticker, attribute, time_period):
               [Input('input-box1', 'value')])
 def update_graph(stock_symbol):
     # Get data for stock
-    stock_data = yf.download(stock_symbol, start='2022-01-01', end='2023-04-06')
+    stock_data = yf.download(
+        stock_symbol, start='2022-01-01', end='2023-04-06')
 
     # Create pair plot
     fig = px.scatter_matrix(stock_data,
-                            dimensions=['Open', 'High', 'Low', 'Close', 'Adj Close'],
+                            dimensions=['Open', 'High',
+                                        'Low', 'Close', 'Adj Close'],
                             color='Volume')
 
     # Update layout
@@ -305,19 +316,19 @@ def update_graph(stock_symbol):
     return fig
 
 
-#===============================================================================================================================================================
+# ===============================================================================================================================================================
 @app.callback(
     Output('risk-analysis-graph', 'figure'),
     [Input('st', 'value'),
      Input('overall', 'value'),
-    Input('prediction-time', 'value')]
+     Input('prediction-time', 'value')]
 )
 def update_risk_analysis_graph(stock, tot_time, prediction_time):
     end_date = dt.date.today()
 
 #  we predict from end_date to till after looking at start_time to till data
     if prediction_time == '30':
-        till = end_date - dt.timedelta(days=30) 
+        till = end_date - dt.timedelta(days=30)
     elif prediction_time == '60':
         till = end_date - dt.timedelta(days=60)
     elif prediction_time == '90':
@@ -344,8 +355,6 @@ def update_risk_analysis_graph(stock, tot_time, prediction_time):
         start_date = till - dt.timedelta(days=365)
 
     analyse_data = yf.download(stock, start=start_date, end=till)
-    
-
 
     # using the analyse_data we will predict the expected value for 'prediction_time' time period and plot it alongside actual_data
 
@@ -353,34 +362,33 @@ def update_risk_analysis_graph(stock, tot_time, prediction_time):
     X = np.arange(len(analyse_data)).reshape(-1, 1)
     Y = analyse_data['Close']
 
-    try:
-        model = Pipeline([('poly', PolynomialFeatures(degree=2)), ('linear', LinearRegression())])
-        model.fit(X, Y)
-
-    except ValueError:
-        model = LinearRegression().fit(X, Y)
+    model = LinearRegression().fit(X, Y)
 
     # Predict the stock price for the next prediction_time days
     num_days = int(prediction_time)
-    X_pred = np.arange(len(analyse_data), len(analyse_data) + num_days).reshape(-1, 1)
+    X_pred = np.arange(len(analyse_data), len(
+        analyse_data) + num_days).reshape(-1, 1)
     y_pred = model.predict(X_pred)
 
     # Create a datetime index for the predicted values
     pred_dates = pd.date_range(start=till, periods=num_days, freq='D')
 
     # Combine actual data with predicted data
-    combined_data = pd.concat([actual_data['Close'], pd.Series(y_pred, index=pred_dates)], axis=0)
+    combined_data = pd.concat(
+        [actual_data['Close'], pd.Series(y_pred, index=pred_dates)], axis=0)
 
 # Create the plot
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data, name='Actual'))
+    fig.add_trace(go.Scatter(x=combined_data.index,
+                  y=combined_data, name='Actual'))
     fig.add_trace(go.Scatter(x=pred_dates, y=y_pred, name='Expected'))
-    fig.update_layout(title='Risk Analysis Graph', xaxis_title='Date', yaxis_title='Stock Price')
+    fig.update_layout(title='Risk Analysis Graph',
+                      xaxis_title='Date', yaxis_title='Stock Price')
     return fig
 
 
 #    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  #===============================================================================================================================================================
+  # ===============================================================================================================================================================
 # Define function to calculate expected stock price using Monte Carlo simulation
 def monte_carlo_simulation(start_price, days, mu, sigma, num_simulations):
     dt = 1 / 252  # time interval for simulation
@@ -389,12 +397,14 @@ def monte_carlo_simulation(start_price, days, mu, sigma, num_simulations):
 
     for i in range(1, days):
         # calculate the daily returns
-        daily_returns = np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * norm.ppf(np.random.rand(num_simulations)))
+        daily_returns = np.exp((mu - 0.5 * sigma ** 2) * dt + sigma *
+                               np.sqrt(dt) * norm.ppf(np.random.rand(num_simulations)))
 
         # calculate the new prices
         prices[i] = prices[i-1] * daily_returns
 
     return prices
+
 
 @app.callback(
     [Output('monte-carlo', 'figure'), Output('monte-carlo-dist', 'figure')],
@@ -402,7 +412,6 @@ def monte_carlo_simulation(start_price, days, mu, sigma, num_simulations):
      Input('sim', 'value'),
      Input('time', 'value')]
 )
-
 def update_risk_analysis_graph_monte_carlo(stock, simulations, prediction_time):
     end_date = dt.date.today()
 
@@ -413,7 +422,7 @@ def update_risk_analysis_graph_monte_carlo(stock, simulations, prediction_time):
     else:
         days = 90
 
-    start_date = end_date - dt.timedelta(days= 730)
+    start_date = end_date - dt.timedelta(days=730)
     data = yf.download(stock, start=start_date, end=end_date)
 
     # calculate the daily returns
@@ -436,25 +445,32 @@ def update_risk_analysis_graph_monte_carlo(stock, simulations, prediction_time):
     else:
         num_simulations = 100
 
-    prices = monte_carlo_simulation(start_price, days, mu, sigma, num_simulations)
+    prices = monte_carlo_simulation(
+        start_price, days, mu, sigma, num_simulations)
 
     # plot the results
     fig = go.Figure()
 
     for i in range(num_simulations):
-        fig.add_trace(go.Scatter(x=data.index, y=prices[:, i], mode='lines', name='Simulation ' + str(i+1)))
+        fig.add_trace(go.Scatter(
+            x=data.index, y=prices[:, i], mode='lines', name='Simulation ' + str(i+1)))
 
-    fig.update_layout(title='Monte Carlo Simulation', xaxis_title='Date', yaxis_title='Stock Price')
-    # return fig  
+    fig.update_layout(title='Monte Carlo Simulation',
+                      xaxis_title='Date', yaxis_title='Stock Price')
+    # return fig
 
     #  plot the distribution of final results
     final_prices = prices[-1, :]
     fig_dist = go.Figure()
-    fig_dist.add_trace(go.Histogram(x=final_prices, nbinsx=20, name='Final Prices'))
-    fig_dist.add_vline(x=np.percentile(final_prices, 1), line_dash='dash', line_color='red', name='1% Quantile')
-    fig_dist.update_layout(title='Distribution of Final Prices', xaxis_title='Final Stock Price at 1% Quartile', yaxis_title='Frequency',  bargap=0.1)
+    fig_dist.add_trace(go.Histogram(
+        x=final_prices, nbinsx=20, name='Final Prices'))
+    fig_dist.add_vline(x=np.percentile(final_prices, 1),
+                       line_dash='dash', line_color='red', name='1% Quantile')
+    fig_dist.update_layout(title='Distribution of Final Prices',
+                           xaxis_title='Final Stock Price at 1% Quartile', yaxis_title='Frequency',  bargap=0.1)
 
     return fig, fig_dist
+
 
 # Run the app
 if __name__ == '__main__':
