@@ -165,7 +165,7 @@ app.layout = html.Div([
             html.Div([
                 
                 html.Label('Select stock symbol: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
-                dcc.Dropdown(id='stk', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
+                dcc.Dropdown(id='stk', options=[{'label': i, 'value': i} for i in top50], value='MSFT'),
                 html.Br(),
                 html.Label('Select number of simulations to run: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 dcc.RadioItems(id='sim', options=[
@@ -232,7 +232,7 @@ app.layout = html.Div([
                     {'label': '5 Years', 'value': '5y'},
                     {'label': '10 Years', 'value': '10y'},
                     {'label': '20 Years', 'value': '20y'}
-                ], value='1mo'),
+                ], value='6mo'),
                 html.Br(),
                 html.Label('Select Rolling Average Time Period: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 
@@ -271,7 +271,7 @@ app.layout = html.Div([
         dcc.Tab(label='Pair Plots', children=[
             html.Div([
                 html.Label('Select stock symbol: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
-                dcc.Dropdown(id='ticker-select', options=[{'label': i, 'value': i} for i in top50], value='AAPL'),
+                dcc.Dropdown(id='ticker-select', options=[{'label': i, 'value': i} for i in top50], value='MSFT'),
                 html.Br(),
                 dcc.Graph(id='pair-plots')
             ])
@@ -280,7 +280,7 @@ app.layout = html.Div([
         dcc.Tab(label='Long/Short Term Investment', children=[
             html.Div([
                 html.Label('Select stock symbol: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
-                dcc.Dropdown(id='input-box', value = ["MSFT", "AAPL"], options=[{'label': i, 'value': i} for i in top50], multi = True),
+                dcc.Dropdown(id='input-box', value = ["MSFT", "AMZN"], options=[{'label': i, 'value': i} for i in top50], multi = True),
                 html.Br(),
                 html.Label('Select Time Period used for Prediction: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 dcc.RadioItems(id='overall', options=[
@@ -296,14 +296,14 @@ app.layout = html.Div([
         ]),
         
         
-        dcc.Tab(label='Risk Analysis using LR', children=[
+        dcc.Tab(label='Risk Analysis using LSTM', children=[
             html.Div([
 
-                html.Label('Select stock symbol: '),
+                html.Label('Select stock symbol: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 dcc.Dropdown(id='st', options=[
-                             {'label': i, 'value': i} for i in top50], value='AAPL'),
+                             {'label': i, 'value': i} for i in top50], value='MSFT'),
                 html.Br(),
-                html.Label('Select Time Period used for Prediction: '),
+                html.Label('Select Time Period used for Prediction: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
                 dcc.RadioItems(id='overallnew', options=[
                     {'label': '6 Months', 'value': '6mo'},
                     {'label': '1 Year', 'value': '1y'},
@@ -312,7 +312,7 @@ app.layout = html.Div([
                     {'label': '20 Years', 'value': '20y'}
                 ], value='1y'),
                 html.Br(),
-                html.Label('Select Prediction Time Period: '),
+                html.Label('Select Prediction Time Period: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
 
                 dcc.RadioItems(
                     id='prediction-time',
@@ -325,30 +325,21 @@ app.layout = html.Div([
                 ),
                 html.Br(),
 
-                dcc.RadioItems(
-                    id='op',
-                    options=[
-                        {'label': 'Prediction using LSTM', 'value': 'LSTM'},
-                        {'label': 'Prediction using Prophet', 'value': 'Prophet'},
-                    ],
-                    value='LSTM'
-                ),
-                html.Br(),
                 dcc.Graph(id='risk-analysis-graph')
             ])
         ]),
-        dcc.Tab(label='Allocation', children=[
+        dcc.Tab(label='Know where to invest!', children=[
         html.Div([
-            html.Label('Select stock symbols:', style={'font-size': '18px'}),
+            html.Label('Select stock symbols:',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
             dcc.Dropdown(
                 id='stocks-dropdown',
                 options=[{'label': i, 'value': i} for i in top50],
-                value=['MSFT','AAPL'],
+                value=['MSFT','AMZN'],
                 multi=True
             ),
             html.Br(),
 
-            html.Label('Select the investment amount:', style={'font-size': '18px'}),
+            html.Label('Select the investment amount:',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
             dcc.Input(
                 id='investment-amount',
                 type='number',
@@ -357,33 +348,39 @@ app.layout = html.Div([
             ),
             html.Br(),
 
-            html.Label('Select date range:', style={'font-size': '18px'}),
+            html.Label('Select date range:',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
             dcc.RangeSlider(
                 id='date-range-slider',
                 min=min_timestamp,
                 max=max_timestamp,
                 value=[min_timestamp, max_timestamp],
+                # marks = {
+                #     int(date.timestamp()): {'label': date.strftime('%Y-%m-%d'), 'style': {'cursor': 'pointer'}, 'tooltip': date.strftime('%Y-%m-%d')}
+                #     for date in pd.date_range(start=min_date, end=max_date)
+                # },
                 marks={
                     int(date.timestamp()): date.strftime('%Y-%m-%d')
                     for date in pd.date_range(start=min_date, end=max_date)
                 },
+                # tooltip={
+                #     'always_visible': True,
+                #     'placement': 'topLeft',
+                #     'format': {'specifier': '%Y-%m-%d'}
+                # },
                 step=None
             ),
+            html.Div(id='date-range-slider-output'),
             html.Br(),
 
             dcc.Graph(id='allocation', style={'height': '600px'})
-        ], style={'padding': '20px'}),
-
-            html.Div([
-                dcc.Graph(id='allocation-donut', style={'height': '600px'})
-            ], style={'padding': '20px'})
+        ], style={'padding': '20px'})
         ], selected_style={'font-weight': 'bold'}),
         
         
         dcc.Tab(label='Correlation Analysis of Multiple Companies', children=[
                     html.Div([
             html.Label('Select stock symbol: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
-            dcc.Dropdown(id='st1', options=[{'label': i, 'value': i} for i in top50], value=['MSFT','AAPL'], multi = True),
+            dcc.Dropdown(id='st1', options=[{'label': i, 'value': i} for i in top50], value=['MSFT','AMZN'], multi = True),
             html.Br(),
 
             html.Label('Select the analysis period: ',style={'font-weight': 'bold', 'font-size': '20px', 'color': '#007bff'}),
@@ -420,6 +417,18 @@ app.layout = html.Div([
     ])
 ])
 
+
+
+@app.callback(
+    dash.dependencies.Output('date-range-slider-output', 'children'),
+    [dash.dependencies.Input('date-range-slider', 'value')]
+)
+def update_output(value):
+    return f'Selected dates: {pd.to_datetime(value[0], unit="s").strftime("%Y-%m-%d")} to {pd.to_datetime(value[1], unit="s").strftime("%Y-%m-%d")}'
+
+
+
+
 # Define the callback for candlestick chart
 @app.callback(
     Output('candlestick-chart', 'figure'),
@@ -444,6 +453,7 @@ def update_candlestick_chart(symbol, period):
     fig = go.Figure(data=[trace], layout=layout)
     
     fig.update_layout(
+        hovermode='x unified',
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
@@ -496,6 +506,7 @@ def update_moving_averages_chart(symbol, period, moving_average_days):
     fig = go.Figure(data=traces, layout=layout)
     
     fig.update_layout(
+        hovermode='x unified',
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
@@ -864,7 +875,7 @@ def update_trend_analysis(stock_name, time_period):
     # Plot the pie chart using Plotly
     fig = px.pie(sx_pie, values='count', names='Trend',
                  title='Trend Analysis',
-                 hole=0.4, color='Trend')
+                 hole=0.4, color='Trend', height=800, width=600)
     return fig
 
 
@@ -900,10 +911,11 @@ def update_trend_analysis(stock_name, time_period):
     Output('risk-analysis-graph', 'figure'),
     [Input('st', 'value'),
      Input('overallnew', 'value'),
-     Input('prediction-time', 'value'),
-     Input('op', 'value')]
+     Input('prediction-time', 'value')
+    ]
+    
 )
-def update_risk_analysis_graph(stock, tot_time, prediction_time, op):
+def update_risk_analysis_graph(stock, tot_time, prediction_time):
     end_date = dt.date.today()
 
 #  we predict from end_date to till after looking at start_time to till data
@@ -965,7 +977,7 @@ def update_risk_analysis_graph(stock, tot_time, prediction_time, op):
     lstm.compile(loss='mean_squared_error', optimizer='adam')
 
     # Training LSTM model
-    history = lstm.fit(X_train, y_train, epochs=10,
+    history = lstm.fit(X_train, y_train, epochs=100,
                         batch_size=8, verbose=1, shuffle=False)
     y_pred = lstm.predict(np.array(X_test))
 
