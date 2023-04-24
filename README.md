@@ -2,17 +2,17 @@
 
 1. Packages required to run the code:
 
-yfinance
-pandas
-dash
-numpy
-sklearn
-plotly
-datetime
-scipy
-dash_bootstrap_components
-keras
-seaborn
+- yfinance
+- pandas
+- dash
+- numpy
+- sklearn
+- plotly
+- datetime
+- scipy
+- dash_bootstrap_components
+- keras
+- seaborn
 
 2. To run the code run the command:  
 python3 pro.py
